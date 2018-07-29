@@ -688,71 +688,75 @@ namespace Kosynka
 
         private void отменитьХодToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            accent = -1;
-            accent2 = -1;
-
-            int last = oldPlace.Count - 1;
-
-            // переложить countRemember карт с newPlace на oldPlace
-
-            // I. переложить countRemember карт с newPlace на buffer
-
-            for (int i = 0; i < countRemember[last]; i++)
+            if (!dragging)
             {
-                // сначала удаляем из нового места
-                Card card;
-                if (newPlace[last] < 8)
+                accent = -1;
+                accent2 = -1;
+
+                int last = oldPlace.Count - 1;
+
+                // переложить countRemember карт с newPlace на oldPlace
+
+                // I. переложить countRemember карт с newPlace на buffer
+
+                for (int i = 0; i < countRemember[last]; i++)
                 {
-                    card = stacks[newPlace[last]][stacks[newPlace[last]].Count - 1];
-                    stacks[newPlace[last]].RemoveAt(stacks[newPlace[last]].Count - 1);
-                }
-                else if (newPlace[last] < 12)
-                {
-                    card = stacksReady[newPlace[last] - 8][stacksReady[newPlace[last] - 8].Count - 1];    // где тут выход за границы? 
-                    stacksReady[newPlace[last] - 8].RemoveAt(stacksReady[newPlace[last] - 8].Count - 1);
-                }
-                else{
-                    card = cells[newPlace[last] - 12];
-                    cells[newPlace[last] - 12] = null;
+                    // сначала удаляем из нового места
+                    Card card;
+                    if (newPlace[last] < 8)
+                    {
+                        card = stacks[newPlace[last]][stacks[newPlace[last]].Count - 1];
+                        stacks[newPlace[last]].RemoveAt(stacks[newPlace[last]].Count - 1);
+                    }
+                    else if (newPlace[last] < 12)
+                    {
+                        card = stacksReady[newPlace[last] - 8][stacksReady[newPlace[last] - 8].Count - 1];    // где тут выход за границы? 
+                        stacksReady[newPlace[last] - 8].RemoveAt(stacksReady[newPlace[last] - 8].Count - 1);
+                    }
+                    else
+                    {
+                        card = cells[newPlace[last] - 12];
+                        cells[newPlace[last] - 12] = null;
+                    }
+
+                    // затем в буфер
+                    buffer.Add(card);
                 }
 
-                // затем в буфер
-                buffer.Add(card);
+                // II. переложить countRemember карт с buffer на oldPlace
+
+                for (int i = 0; i < countRemember[last]; i++)
+                {
+                    // сначала удаляем из буфера
+                    Card card = buffer[buffer.Count - 1];
+                    buffer.RemoveAt(buffer.Count - 1);
+
+                    // затем возвращаем в старое
+                    if (oldPlace[last] < 8)
+                    {
+                        stacks[oldPlace[last]].Add(card);
+                    }
+                    else if (oldPlace[last] < 12)
+                    {
+                        stacksReady[oldPlace[last] - 8].Add(card);
+                    }
+                    else
+                    {
+                        cells[oldPlace[last] - 12] = card;
+                    }
+                }
+
+                oldPlace.RemoveAt(last);
+                newPlace.RemoveAt(last);
+                countRemember.RemoveAt(last);
+
+                if (oldPlace.Count == 0)
+                {
+                    отменитьХодToolStripMenuItem.Enabled = false;
+                }
+
+                Invalidate();
             }
-
-            // II. переложить countRemember карт с buffer на oldPlace
-
-            for (int i = 0; i < countRemember[last]; i++)
-            {
-                // сначала удаляем из буфера
-                Card card = buffer[buffer.Count - 1];
-                buffer.RemoveAt(buffer.Count - 1);
-
-                // затем возвращаем в старое
-                if (oldPlace[last] < 8)
-                {
-                    stacks[oldPlace[last]].Add(card);
-                }
-                else if (oldPlace[last] < 12)
-                {
-                    stacksReady[oldPlace[last] - 8].Add(card);
-                }
-                else
-                {
-                    cells[oldPlace[last] - 12] = card;
-                }
-            }
-
-            oldPlace.RemoveAt(last);
-            newPlace.RemoveAt(last);
-            countRemember.RemoveAt(last);
-
-            if (oldPlace.Count == 0)
-            {
-                отменитьХодToolStripMenuItem.Enabled = false;
-            }
-
-            Invalidate();
         }
 
         bool normStack(int number)
